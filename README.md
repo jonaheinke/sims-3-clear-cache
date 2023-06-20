@@ -1,0 +1,1 @@
+# sims-3-clear-cache
