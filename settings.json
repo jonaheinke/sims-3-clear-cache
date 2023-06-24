@@ -1,0 +1,41 @@
+{
+	"game_path": "",
+	"document_path": "",
+	"caches": {
+		"CASPartCache": true,
+		"compositorCache": true,
+		"scriptCache": true,
+		"simCompositorCache": true,
+		"socialCache": true,
+		"WorldCaches": false,
+		"IGACache": false,
+		"SigsCache": false,
+		"DCCache": false,
+		"ScriptErrorLogs": false,
+		"FeaturedItems": false,
+		"ExportDB": false
+	},
+	"dlcs": {
+		"Game": true,
+		"EP1": true,
+		"EP2": true,
+		"EP3": true,
+		"EP4": true,
+		"EP5": true,
+		"EP6": true,
+		"EP7": true,
+		"EP8": true,
+		"EP9": true,
+		"EP10": true,
+		"EP11": true,
+		"SP1": true,
+		"SP2": true,
+		"SP3": true,
+		"SP4": true,
+		"SP5": true,
+		"SP6": true,
+		"SP7": true,
+		"SP8": true,
+		"SP9": true
+	}
+}
