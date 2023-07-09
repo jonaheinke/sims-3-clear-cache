@@ -1,7 +1,7 @@
 # The Sims 3 Management Program
 
-[![license](https://img.shields.io/github/license/jonaheinke/sims-3-clear-cache)](LICENSE)
-[![code size](https://img.shields.io/github/languages/code-size/jonaheinke/sims-3-clear-cache)](#)
+[![license](https://img.shields.io/github/license/jonaheinke/the-sims-3-management-program)](LICENSE)
+[![code size](https://img.shields.io/github/languages/code-size/jonaheinke/the-sims-3-management-program)](#)
 
 This is a simple python script to clear all the caches of The Sims 3. It is written in python 3.10 and uses tkinter for the GUI.
 
@@ -15,19 +15,14 @@ Light Mode                | Dark Screenshot
 
 ## Usage
 
-### Clone repository
-
-```bash
-git clone --recurse-submodules https://github.com/jonaheinke/sims-3-clear-cache.git
-```
-
 ### Run script
 
+Make sure Python 3.10 or higher is installed. No external dependencies are needed.
+
 ```bash
+git clone --recurse-submodules https://github.com/jonaheinke/the-sims-3-management-program.git
 python main.py [--dark]
 ```
-
-No external dependencies are needed.
 
 ### Alternative: Create a desktop shortcut
 
