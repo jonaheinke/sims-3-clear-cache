@@ -1,7 +1,7 @@
 # ------------------------------------------------------ IMPORTS ----------------------------------------------------- #
 
 #standard library imports
-import os, random, shutil, json
+import os, random, shutil, glob, json, argparse
 from dataclasses import dataclass, InitVar, field
 
 #third party imports
@@ -18,7 +18,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 @dataclass
 class CacheFile:
 	name: str = ""
-	filename: str | list[str] = ""
+	filename: str = ""
 	settings: InitVar[dict[str, str | dict[str, bool]]] = {}
 	default: InitVar[bool] = True
 	var: tk.BooleanVar | None = None
@@ -33,11 +33,17 @@ class CacheFile:
 		return hash(self.name + self.filename)
 
 	def remove(self):
-		if isinstance(self.filename, str):
-			os.remove(os.path.join(document_path.get(), self.filename))
-		else:
-			for file in self.filename:
+		files = glob.iglob(self.filename, root_dir = document_path.get())
+		print(f"To be removed as {self.name}:")
+		print(list(files))
+		return
+		for file in files:
+			try:
 				os.remove(os.path.join(document_path.get(), file))
+			except PermissionError:
+				print("Permission denied.")
+			except:
+				print("File is still in use.")
 
 @dataclass
 class DLC:
@@ -59,6 +65,8 @@ class DLC:
 
 	def choose_this(self):
 		path_to_mod = os.path.join(document_path.get(), "Mods", "Packages", "randomized-loading-screen-theme.package")
+		if not isinstance(self.filename, str):
+			print("Error selecting DLC: filename is not a string")
 		if self.filename:
 			shutil.copy(os.path.join("dlcs", self.filename), path_to_mod)
 		else:
@@ -88,6 +96,15 @@ def tkinter_center(win: tk.Tk | tk.Toplevel):
 
 
 
+# -------------------------------------------- READ COMMAND LINE ARGUMENTS ------------------------------------------- #
+
+parser = argparse.ArgumentParser(description = "The Sims 3 Management Program")
+parser.add_argument("--dark",  action = "store_true", help = "enable dark mode")
+parser.add_argument("--debug", action = "store_true", help = "enable debug mode (not recommended)")
+args = parser.parse_args()
+
+
+
 # ----------------------------------------------- WINDOW INITIALIZATION ---------------------------------------------- #
 
 #window init
@@ -99,8 +116,8 @@ window.resizable(False, False)
 window.bind("<Escape>", lambda _: window.destroy())
 
 #theme
-window.tk.call("source", os.path.join("theme", "forest-light.tcl"))
-ttk.Style().theme_use("forest-light")
+window.tk.call("source", os.path.join("theme", "forest-dark.tcl" if args.dark else "forest-light.tcl"))
+ttk.Style().theme_use("forest-dark" if args.dark else "forest-light")
 #window.tk.call("source", os.path.join("theme", "forest-dark.tcl"))
 #ttk.Style().theme_use("forest-dark")
 
@@ -109,23 +126,32 @@ ttk.Style().theme_use("forest-light")
 # ----------------------------------------------------- VARIABLES ---------------------------------------------------- #
 
 #LOAD SAVED SETTINGS
-with open("settings.json", "r") as f:
-	settings: dict[str, str | dict[str, bool]] = json.load(f)
+try:
+	with open("settings.json", "r") as f:
+		settings: dict[str, str | dict[str, bool]] = json.load(f)
+except json.JSONDecodeError:
+	settings = {}
+except FileNotFoundError:
+	settings = {}
+except:
+	settings = {}
 game_path     = tk.StringVar(value = settings.get("game_path",     ""))
 document_path = tk.StringVar(value = settings.get("document_path", ""))
+save_settings = tk.BooleanVar(value = True)
 caches: list[CacheFile] = [
-	CacheFile("CASPartCache",       "CASPartCache.package",       settings, False),
-	CacheFile("compositorCache",    "compositorCache.package",    settings, False),
-	CacheFile("scriptCache",        "scriptCache.package",        settings, False),
-	CacheFile("simCompositorCache", "simCompositorCache.package", settings, False),
-	CacheFile("socialCache",        "socialCache.package",        settings, False),
-	CacheFile("WorldCaches",        "WorldCaches.package",        settings, False),
-	CacheFile("IGACache",           "IGACache.package",           settings, False),
-	CacheFile("SigsCache",          "SigsCache.package",          settings, False),
-	CacheFile("DCCache",            "DCCache.package",            settings, False),
-	CacheFile("ScriptErrorLogs",    "Scripterror_*.xml",          settings, False),
-	CacheFile("FeaturedItems",      "Scripterror_*.xml",          settings, False),
-	CacheFile("ExportDB",           "Scripterror_*.xml",          settings, False),
+	CacheFile("CASPartCache",       "CASPartCache.package",            settings, True ),
+	CacheFile("compositorCache",    "compositorCache.package",         settings, True ),
+	CacheFile("scriptCache",        "scriptCache.package",             settings, True ),
+	CacheFile("simCompositorCache", "simCompositorCache.package",      settings, True ),
+	CacheFile("socialCache",        "socialCache.package",             settings, True ),
+	CacheFile("WorldCaches",        "WorldCaches/*.package",           settings, True ),
+	CacheFile("DCCache",            "DCCache/*",                       settings, False),
+	CacheFile("IGACache",           "IGACache/*",                      settings, False),
+	CacheFile("SigsCache",          "SigsCache/*.bin",                 settings, False),
+	CacheFile("ScriptErrorLogs",    "ScriptError_*.xml",               settings, False),
+	CacheFile("Sims3Logs",          "Sims3Logs.xml",                   settings, True ),
+	CacheFile("FeaturedItems",      "FeaturedItems/*.png",             settings, False),
+	CacheFile("ExportDB",           "Saves/*.sims3/*ExportDB.package", settings, False),
 ]
 eps: list[DLC] = [
 	DLC("Game", "Base Game",        "base.package", settings, True ),
@@ -147,7 +173,7 @@ sps: list[DLC] = [
 	DLC("SP3", "Outdoor Living Stuff",      "sp3.package", settings, True ),
 	DLC("SP4", "Town Life Stuff",           "sp4.package", settings, True ),
 	DLC("SP5", "Master Suite Stuff",        "sp5.package", settings, True ),
-	DLC("SP6", "Katy Perry's Sweet Treats", "sp6.package", settings, False),
+	DLC("SP6", "Katy Perry's Sweet Treats", "sp6.package", settings, True ),
 	DLC("SP7", "Diesel Stuff",              "sp7.package", settings, True ),
 	DLC("SP8", "70s, 80s, & 90s Stuff",     "sp8.package", settings, True ),
 	DLC("SP9", "Movie Stuff",               "sp9.package", settings, True ),
@@ -168,21 +194,20 @@ def execute():
 		return
 	
 	#SAVE SETTINGS
-	with open("settings.json", "w") as f:
-		dump = {
-			"game_path":     game_path.get(),
-			"document_path": document_path.get(),
-			"caches": {cache.name: cache.var.get() for cache in caches},
-			"dlcs":    {dlc.id:    dlc.var.get()   for dlc in eps + sps},
-		}
-		json.dump(dump, f, indent = "\t") #, default = lambda x: x.__dict__()
-	print("Saved settings successfully.")
+	if save_settings.get():
+		with open("settings.json", "w") as f:
+			dump = {
+				"game_path":     game_path.get(),
+				"document_path": document_path.get(),
+				"caches": {cache.name: cache.var.get() for cache in caches},
+				"dlcs":   {dlc.id:     dlc.var.get()   for dlc in eps + sps},
+			}
+			json.dump(dump, f, indent = "\t") #, default = lambda x: x.__dict__()
 	
 	#DELETE ALL SELECTED CACHE FILES
 	for cache in caches:
 		if cache.var.get():
 			cache.remove()
-	print("Removed all selected cache files successfully.")
 
 	#CHOOSE RANDOM DLC
 	allowed_dlcs = [dlc for dlc in eps + sps if dlc.var.get()]
@@ -190,7 +215,7 @@ def execute():
 		messagebox.showerror("Selection Error", "No DLCs selected.")
 		return
 	chosen_dlc = random.choice(allowed_dlcs)
-	print(f"Chosen DLC: {chosen_dlc.name}")
+	#print(f"Chosen DLC: {chosen_dlc.name}")
 	chosen_dlc.choose_this()
 
 	#END PROGRAM
@@ -203,11 +228,13 @@ def execute():
 #PATH SELECTOR
 frame_path = ttk.LabelFrame(window, text = "Path Selector", padding = 10)
 #GAME PATH
-ttk.Label(frame_path, text = "Path to The Sims 3 folder: (optional)").pack()
+"""
+ttk.Label(frame_path, text = "Path to The Sims 3 installation folder: (optional)").pack()
 frame_path_select = tk.Frame(frame_path)
 ttk.Entry(frame_path_select, state = "readonly", cursor = "arrow", textvariable = game_path).pack(fill = tk.BOTH, expand = True, side = tk.LEFT, padx = (0, 10))
 ttk.Button(frame_path_select, text = "Browse directory...", cursor = "hand2", command = lambda: game_path.set(filedialog.askdirectory(title = "Select Sims 3 folder")), style = "Accent.TButton").pack()
 frame_path_select.pack(fill = tk.BOTH, expand = True, pady = (0, 10))
+"""
 #DOCUMENT PATH
 ttk.Label(frame_path, text = "Path to The Sims 3 in Documents folder:").pack()
 frame_path_select = tk.Frame(frame_path)
@@ -224,13 +251,7 @@ frame_settings.grid_columnconfigure(1, weight = 1)
 frame_settings_cache = ttk.LabelFrame(frame_settings, text = "Cache Cleaner", padding = 10)
 ttk.Button(frame_settings_cache, cursor = "hand2", text = "Select all",   command = lambda: set_all(caches, True ), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
 ttk.Button(frame_settings_cache, cursor = "hand2", text = "Deselect all", command = lambda: set_all(caches, False), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
-temporary_disable = False
 for cachefile in caches:
-	if cachefile.name == "WorldCaches":
-		temporary_disable = True
-	if temporary_disable:
-		ttk.Checkbutton(frame_settings_cache, cursor = "hand2", text = cachefile.name, variable = cachefile.var, state = tk.DISABLED).pack(anchor = "w", pady = 2)
-		continue
 	ttk.Checkbutton(frame_settings_cache, cursor = "hand2", text = cachefile.name, variable = cachefile.var).pack(anchor = "w", pady = 2)
 frame_settings_cache.grid(row = 0, column = 0, sticky = "NESW", padx = (20, 10), pady = 10)
 
@@ -241,19 +262,20 @@ ttk.Button(frame_settings_title_ep, cursor = "hand2", text = "Select all",   com
 ttk.Button(frame_settings_title_ep, cursor = "hand2", text = "Deselect all", command = lambda: set_all(eps, False), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
 for ep in eps:
 	ttk.Checkbutton(frame_settings_title_ep, cursor = "hand2", text = ep.name, variable = ep.var).pack(anchor = "w", pady = 2)
-frame_settings_title_ep.pack(side = tk.LEFT, padx = (0, 10))
+frame_settings_title_ep.grid(row = 0, column = 0, sticky = "NESW", padx = (0, 10))
 frame_settings_title_sp = tk.Frame(frame_settings_title)
 ttk.Button(frame_settings_title_sp, cursor = "hand2", text = "Select all",   command = lambda: set_all(sps, True ), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
 ttk.Button(frame_settings_title_sp, cursor = "hand2", text = "Deselect all", command = lambda: set_all(sps, False), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
 for sp in sps:
 	ttk.Checkbutton(frame_settings_title_sp, cursor = "hand2", text = sp.name, variable = sp.var).pack(anchor = "w", pady = 2)
-frame_settings_title_sp.pack()
+frame_settings_title_sp.grid(row = 0, column = 1, sticky = "NESW")
 frame_settings_title.grid(row = 0, column = 1, sticky = "NESW", padx = (10, 20), pady = 10)
 frame_settings.pack(fill = "both", expand = "yes")
 
 #BUTTONS
 #ttk.Label(window,  cursor = "hand2", text = "License").pack(anchor = "w")
-ttk.Button(window, cursor = "hand2", text = "Confirm", width = 10, style = "Accent.TButton", command = execute).pack(pady = (10, 20))
+ttk.Checkbutton(window, cursor = "hand2", text = "Save Settings", variable = save_settings).pack(side = tk.LEFT, padx = (20, 10), pady = (10, 20))
+ttk.Button(window, cursor = "hand2", text = "Confirm", width = 10, style = "Accent.TButton", command = execute).pack(side = tk.RIGHT, padx = (10, 20), pady = (10, 20))
 
 #CENTER WINDOW
 tkinter_center(window)
