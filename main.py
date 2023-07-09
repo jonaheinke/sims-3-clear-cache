@@ -34,9 +34,10 @@ class CacheFile:
 
 	def remove(self):
 		files = glob.iglob(self.filename, root_dir = document_path.get())
-		print(f"To be removed as {self.name}:")
-		print(list(files))
-		return
+		if args.debug:
+			print(f"To be removed as {self.name}:")
+			print(list(files))
+			return
 		for file in files:
 			try:
 				os.remove(os.path.join(document_path.get(), file))
@@ -118,8 +119,6 @@ window.bind("<Escape>", lambda _: window.destroy())
 #theme
 window.tk.call("source", os.path.join("theme", "forest-dark.tcl" if args.dark else "forest-light.tcl"))
 ttk.Style().theme_use("forest-dark" if args.dark else "forest-light")
-#window.tk.call("source", os.path.join("theme", "forest-dark.tcl"))
-#ttk.Style().theme_use("forest-dark")
 
 
 
