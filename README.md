@@ -9,7 +9,7 @@ It is intended to launch before every gameplay. You have to take care of that yo
 
 ## Screenshots
 
-Light Mode                | Dark Screenshot
+Light Mode                | Dark Mode
 :------------------------:|:-----------------------:
 ![](screenshot_light.png) | ![](screenshot_dark.png)
 
@@ -22,7 +22,7 @@ Make sure Python 3.10 or higher is installed. Only tkinter is required as an ext
 ```bash
 pip install tk -U
 git clone --recurse-submodules https://github.com/jonaheinke/the-sims-3-management-program.git
-python the-sims-3-management-program/main.py --dark
+python the-sims-3-management-program/main.py
 ```
 
 ### Alternative: Create a desktop shortcut
