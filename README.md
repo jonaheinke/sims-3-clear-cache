@@ -17,11 +17,12 @@ Light Mode                | Dark Screenshot
 
 ### Run script
 
-Make sure Python 3.10 or higher is installed. No external dependencies are needed.
+Make sure Python 3.10 or higher is installed. Only tkinter is required as an external dependency.
 
 ```bash
+pip install tk -U
 git clone --recurse-submodules https://github.com/jonaheinke/the-sims-3-management-program.git
-python main.py [--dark]
+python the-sims-3-management-program/main.py --dark
 ```
 
 ### Alternative: Create a desktop shortcut
@@ -29,17 +30,17 @@ python main.py [--dark]
 Add a `The Sims 3.cmd` file to your desktop and put the following lines in it:
 
 ```bash
-python ABSOLUTE_PATH_TO_MAIN_PY [--dark]
+python ABSOLUTE_PATH_TO_MAIN_PY
 ABSOLUTE_PATH_TO_Sims3LauncherW.exe_IN_QUOTATION_MARKS
 ```
 
 ### All Command line arguments
 
-| Name     | Option       | Description                         |
-|----------|--------------|-------------------------------------|
-| Help     | `-h, --help` | show help message                   |
-| Darkmode | `--dark`     | enable dark mode                    |
-| Debug    | `--debug`    | enable debug mode (not recommended) |
+| Name      | Option       | Description                         |
+|-----------|--------------|-------------------------------------|
+| Help      | `-h, --help` | show help message                   |
+| Lightmode | `--light`    | enable light mode                   |
+| Debug     | `--debug`    | enable debug mode (not recommended) |
 
 ## Known Issues
 
