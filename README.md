@@ -46,8 +46,6 @@ ABSOLUTE_PATH_TO_Sims3LauncherW.exe_IN_QUOTATION_MARKS
 
 Planned:
 - Can't detect the game folders automatically. Currently they have to be set manually.
-- Can't detect the installed expansion packs. It would disable the unavailable expansion and stuff checkbox options.
-- Can't detect if Cache files are present. It would disable the unavailable cache clearing options.
 
 Waiting list:
 - The main menu logo is still the latest installed expansion or stuff pack logo.
