@@ -12,6 +12,9 @@ from tkinter import ttk, filedialog, messagebox
 #changing the working directory, so that the program can be run from any path
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
+#local imports
+from tooltip import CreateToolTip
+
 
 
 # -------------------------------------------- READ COMMAND LINE ARGUMENTS ------------------------------------------- #
@@ -52,8 +55,35 @@ except FileNotFoundError:
 	settings = {}
 except:
 	settings = {}
-game_path     = tk.StringVar(value = settings.get("game_path",     ""))
-document_path = tk.StringVar(value = settings.get("document_path", ""))
+
+#DEFAULT DOCUMENT PATH
+document_path_value = settings.get("document_path", "")
+if not document_path_value or not os.path.isdir(document_path_value):
+	document_path_value = next(glob.iglob(os.path.join(os.path.expanduser("~"), "Documents", "Electronic Arts", "* Sims 3")), "")
+
+#DEFAULT GAME PATH
+game_path_value = settings.get("game_path", "")
+if not game_path_value or not os.path.isdir(game_path_value):
+	possible_locations = [
+		"C:\Program Files (x86)\Steam\steamapps\common\The Sims 3",
+		"C:\Program Files (x86)\Origin Games\The Sims 3",
+		"C:\Program Files\Origin Games\The Sims 3",
+		"C:\Programs\Origin Games\The Sims 3",
+		"C:\Program Files (x86)\Electronic Arts\The Sims 3",
+		"C:\Program Files\Electronic Arts\The Sims 3",
+		"C:\Programs\Electronic Arts\The Sims 3",
+	]
+	for location in possible_locations:
+		if os.path.isdir(location):
+			game_path_value = location
+			break
+	else:
+		game_path_value = ""
+		print("Game install location not found.")
+
+#CREATE VARIABLES
+game_path     = tk.StringVar(value = game_path_value)
+document_path = tk.StringVar(value = document_path_value)
 save_settings = tk.BooleanVar(value = True)
 
 
@@ -66,7 +96,7 @@ class CheckButtonClass(ABC):
 	filename: str = ""
 	settings: InitVar[dict[str, str | dict[str, bool]]] = {}
 	default: InitVar[bool] = True
-	var: tk.BooleanVar | None = None
+	var: tk.BooleanVar | None = field(default = None, init = False, hash = False)
 	checkbutton: ttk.Checkbutton = field(default = None, init = False, repr = False, hash = False, compare = False)
 
 	def __hash__(self) -> int:
@@ -92,6 +122,8 @@ class CheckButtonClass(ABC):
 
 @dataclass
 class CacheFile(CheckButtonClass):
+	description: str = ""
+
 	def __post_init__(self, settings, default):
 		value = default
 		if settings and "caches" in settings and self.name in settings["caches"]:
@@ -160,19 +192,20 @@ class DLC(CheckButtonClass):
 # -------------------------------------------------- OTHER VARIABLES ------------------------------------------------- #
 
 caches: list[CacheFile] = [
-	CacheFile("CASPartCache",       "CASPartCache.package",            settings, True ),
-	CacheFile("compositorCache",    "compositorCache.package",         settings, True ),
-	CacheFile("scriptCache",        "scriptCache.package",             settings, True ),
-	CacheFile("simCompositorCache", "simCompositorCache.package",      settings, True ),
-	CacheFile("socialCache",        "socialCache.package",             settings, True ),
-	CacheFile("WorldCaches",        "WorldCaches/*.package",           settings, True ),
-	CacheFile("DCCache",            "DCCache/*",                       settings, False),
-	CacheFile("IGACache",           "IGACache/*",                      settings, False),
-	CacheFile("SigsCache",          "SigsCache/*.bin",                 settings, False),
-	CacheFile("ScriptErrorLogs",    "ScriptError_*.xml",               settings, False),
-	CacheFile("Sims3Logs",          "Sims3Logs.xml",                   settings, True ),
-	CacheFile("FeaturedItems",      "FeaturedItems/*.png",             settings, False),
-	CacheFile("ExportDB",           "Saves/*.sims3/*ExportDB.package", settings, False),
+	CacheFile("CASPartCache",       "CASPartCache.package",            settings, True , "CAS parts that appear in Create-A-Sim"),
+	CacheFile("compositorCache",    "compositorCache.package",         settings, True , "New objects that would appear in Buy/Build mode"),
+	CacheFile("scriptCache",        "scriptCache.package",             settings, True , "Mods or Hacks"),
+	CacheFile("simCompositorCache", "simCompositorCache.package",      settings, True , "New Sims, default skins"),
+	CacheFile("socialCache",        "socialCache.package",             settings, True , "Information about the social aspects (Introduced with Patch 1.31)"),
+	CacheFile("WorldCaches",        "WorldCaches/*.package",           settings, True , "FOR WINDOWS ONLY! Caches for Save Worlds and Travel Worlds, WILL BREAK MAP HOVER TAGS ON MACOS!"),
+	CacheFile("DCCache",            "DCCache/*",                       settings, False, "EXPERIMENTAL: DOES NOT WORK CORRECTLY! DO NOT CHECK! Check if launcher or game continues to crash, corrupted files will be regenerated"),
+	CacheFile("IGACache",           "IGACache/*",                      settings, False, "Check if launcher or game continues to crash, corrupted files will be regenerated"),
+	CacheFile("SigsCache",          "SigsCache/*.bin",                 settings, False, "Check if launcher or game continues to crash, corrupted files will be regenerated"),
+	CacheFile("FeaturedItems",      "FeaturedItems/*.png",             settings, False, "Check if you deinstalled third party items, might slow down the game for first two minutes"),
+	CacheFile("Thumbnails",         "Thumbnails/*.package",            settings, False, "Check if you deinstalled third party items, might slow down the game for first two minutes"),
+	CacheFile("Sims3Logs",          "Sims3Logs.xml",                   settings, True , "Allows the launcher to correctly close upon shutdown, non-existing update processes will be skipped, typical issue with Steam version of the game"),
+	CacheFile("ScriptErrorLogs",    "ScriptError_*.xml",               settings, False, "Error Log Files generated by NRaas ErrorTrap"),
+	CacheFile("ExportDB",           "Saves/*.sims3/*ExportDB.package", settings, False, "EXPERIMENTAL: DO NOT CHECK UNLESS ABSOLUTELY NECESSARY!"),
 ]
 eps: list[DLC] = [
 	DLC("Base Game",        "base.package", settings, True , id = "Game"),
@@ -300,7 +333,9 @@ frame_settings_cache = ttk.LabelFrame(frame_settings, text = "Cache Cleaner", pa
 ttk.Button(frame_settings_cache, cursor = "hand2", text = "Select all",   command = lambda: set_all(caches, True ), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
 ttk.Button(frame_settings_cache, cursor = "hand2", text = "Deselect all", command = lambda: set_all(caches, False), width = 10, style = "Accent.TButton").pack(pady = (0, 5))
 for cache in caches:
-	cache.get_checkbutton(frame_settings_cache).pack(anchor = "w", pady = 2)
+	checkbutton = cache.get_checkbutton(frame_settings_cache)
+	checkbutton.pack(anchor = "w", pady = 2)
+	CreateToolTip(checkbutton, cache.description)
 frame_settings_cache.grid(row = 0, column = 0, sticky = "NESW", padx = (20, 10), pady = 10)
 
 #TITLE SCREEN SELECTOR

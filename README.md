@@ -45,7 +45,7 @@ ABSOLUTE_PATH_TO_Sims3LauncherW.exe_IN_QUOTATION_MARKS
 ## Known Issues
 
 Planned:
-- Can't detect the game folders automatically. Currently they have to be set manually.
+- None
 
 Waiting list:
 - The main menu logo is still the latest installed expansion or stuff pack logo.

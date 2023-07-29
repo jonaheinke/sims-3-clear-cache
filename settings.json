@@ -11,9 +11,10 @@
 		"DCCache": false,
 		"IGACache": false,
 		"SigsCache": false,
-		"ScriptErrorLogs": false,
-		"Sims3Logs": true,
 		"FeaturedItems": false,
+		"Thumbnails": false,
+		"Sims3Logs": true,
+		"ScriptErrorLogs": false,
 		"ExportDB": false
 	},
 	"dlcs": {
