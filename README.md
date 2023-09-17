@@ -3,44 +3,40 @@
 [![license](https://img.shields.io/github/license/jonaheinke/the-sims-3-management-program)](LICENSE)
 [![code size](https://img.shields.io/github/languages/code-size/jonaheinke/the-sims-3-management-program)](#)
 
-This is a simple python script to clear all the caches of The Sims 3. It is written in python 3.10 and uses tkinter for the GUI.
+This is a simple python script to clear all the caches of The Sims 3. It is written in Python 3.10 and uses tkinter for the GUI.
 
 It is intended to launch before every gameplay. You have to take care of that yourself. Instructions on how to do that are listed at Create a desktop shortcut.
 
 ## Screenshots
 
-Light Mode                | Dark Mode
-:------------------------:|:-----------------------:
-![](screenshot_light.png) | ![](screenshot_dark.png)
+Light Mode                | Dark Mode                |
+:------------------------:|:------------------------:|
+![](screenshot_light.png) | ![](screenshot_dark.png) |
 
 ## Usage
+
+### All Command line arguments
+
+| Name      | Option        | Description                         |
+|-----------|---------------|-------------------------------------|
+| Help      | `-h, --help`  | show help message                   |
+| Lightmode | `-l, --light` | switch to light mode                |
+| Debug     | `-d, --debug` | enable debug mode (not recommended) |
 
 ### Run script
 
 Make sure Python 3.10 or higher is installed. Only tkinter is required as an external dependency.
 
 ```bash
+python -V
 pip install tk -U
 git clone --recurse-submodules https://github.com/jonaheinke/the-sims-3-management-program.git
 python the-sims-3-management-program/main.py
 ```
 
-### Alternative: Create a desktop shortcut
+### Optional: Create a desktop shortcut
 
-Add a `The Sims 3.cmd` file to your desktop and put the following lines in it:
 
-```bash
-python ABSOLUTE_PATH_TO_MAIN_PY
-ABSOLUTE_PATH_TO_Sims3LauncherW.exe_IN_QUOTATION_MARKS
-```
-
-### All Command line arguments
-
-| Name      | Option       | Description                         |
-|-----------|--------------|-------------------------------------|
-| Help      | `-h, --help` | show help message                   |
-| Lightmode | `--light`    | enable light mode                   |
-| Debug     | `--debug`    | enable debug mode (not recommended) |
 
 ## Known Issues
 

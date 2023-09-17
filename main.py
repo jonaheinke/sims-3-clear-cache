@@ -1,7 +1,7 @@
 # ------------------------------------------------------ IMPORTS ----------------------------------------------------- #
 
 #standard library imports
-import argparse, glob, json, os, random, shutil
+import argparse, glob, json, os, random, shutil, subprocess
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, InitVar
 
@@ -20,8 +20,8 @@ from tooltip import CreateToolTip
 # -------------------------------------------- READ COMMAND LINE ARGUMENTS ------------------------------------------- #
 
 parser = argparse.ArgumentParser(description = "The Sims 3 Management Program")
-parser.add_argument("--light", "-l", action = "store_true", help = "enable light mode")
-parser.add_argument("--debug", "-d", action = "store_true", help = "enable debug mode (not recommended)")
+parser.add_argument("-l", "--light", action = "store_true", help = "switch to light mode")
+parser.add_argument("-d", "--debug", action = "store_true", help = "enable debug mode (not recommended)")
 parser.add_argument("--settings", type = str, default = "settings.json", help = "name of the settings file")
 args = parser.parse_args()
 
@@ -35,6 +35,14 @@ window.title("The Sims 3 Management Program")
 window.resizable(False, False)
 
 #keyboard bindings
+def focus_next_widget(event):
+	event.widget.tk_focusNext().focus()
+	return("break")
+def focus_prev_widget(event):
+	event.widget.tk_focusPrev().focus()
+	return("break")
+window.bind("<Tab>", focus_next_widget)
+window.bind("<Shift-Tab>", focus_prev_widget)
 window.bind("<Escape>", lambda _: window.destroy())
 
 #theme
@@ -194,7 +202,7 @@ class DLC(CheckButtonClass):
 caches: list[CacheFile] = [
 	CacheFile("CASPartCache",       "CASPartCache.package",            settings, True , "CAS parts that appear in Create-A-Sim"),
 	CacheFile("compositorCache",    "compositorCache.package",         settings, True , "New objects that would appear in Buy/Build mode"),
-	CacheFile("scriptCache",        "scriptCache.package",             settings, True , "Mods or Hacks"),
+	CacheFile("scriptCache",        "scriptCache.package",             settings, True , "Mod Cache"),
 	CacheFile("simCompositorCache", "simCompositorCache.package",      settings, True , "New Sims, default skins"),
 	CacheFile("socialCache",        "socialCache.package",             settings, True , "Information about the social aspects (Introduced with Patch 1.31)"),
 	CacheFile("WorldCaches",        "WorldCaches/*.package",           settings, True , "FOR WINDOWS ONLY! Caches for Save Worlds and Travel Worlds, WILL BREAK MAP HOVER TAGS ON MACOS!"),
@@ -303,6 +311,23 @@ def execute():
 	#END PROGRAM
 	window.destroy()
 
+def confirm():
+	execute()
+
+def confirm_and_start_launcher():
+	execute()
+	try:
+		subprocess.Popen(os.path.join(game_path.get(), "Game", "Bin", "Sims3LauncherW.exe"))
+	except OSError:
+		messagebox.showerror("File Error", "Sims3LauncherW.exe not found. Launcher could not be started.")
+
+def confirm_and_start_game():
+	execute()
+	try:
+		subprocess.Popen(os.path.join(game_path.get(), "Game", "Bin", "TS3W.exe"))
+	except OSError:
+		messagebox.showerror("File Error", "TS3W.exe not found. Game could not be started.")
+
 
 
 # ------------------------------------------------------ LAYOUT ------------------------------------------------------ #
@@ -359,9 +384,10 @@ frame_settings.pack(fill = "both", expand = "yes")
 
 #BUTTONS
 #ttk.Label(window, cursor = "hand2", text = "License").pack(anchor = "w")
-ttk.Checkbutton(window, cursor = "hand2", text = "Save Settings", variable = save_settings).pack(side = tk.LEFT, padx = (20, 10), pady = (10, 20))
-ttk.Button(window, cursor = "hand2", text = "Confirm and start Launcher", width = 25, style = "Accent.TButton", command = execute).pack(side = tk.RIGHT, padx = (10, 20), pady = (10, 20))
-ttk.Button(window, cursor = "hand2", text = "Confirm",                    width = 10, style = "Accent.TButton", command = execute).pack(side = tk.RIGHT, padx = 10,       pady = (10, 20))
+ttk.Checkbutton(window, cursor = "hand2", text = "Save Settings", variable = save_settings).pack(pady = 10)
+ttk.Button(window, cursor = "hand2", text = "Confirm and Start Game",    width = 22, style = "Accent.TButton", command = confirm_and_start_game    ).pack(side = tk.RIGHT, padx = (10, 20), pady = (10, 20))
+ttk.Button(window, cursor = "hand2", text = "Confirm and Open Launcher", width = 25, style = "Accent.TButton", command = confirm_and_start_launcher).pack(side = tk.RIGHT, padx = (10, 10), pady = (10, 20))
+ttk.Button(window, cursor = "hand2", text = "Confirm",                   width = 10, style = "Accent.TButton", command = confirm                   ).pack(side = tk.RIGHT, padx = (20, 10), pady = (10, 20))
 
 
 

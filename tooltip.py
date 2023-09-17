@@ -5,7 +5,7 @@ www.daniweb.com/programming/software-development/code/484591/a-tooltip-class-for
 
 Modified to include a delay time by Victor Zaccardo, 25mar16
 
-Modified to only allow Python 3, use dataclasses, annotate types by Jona Heinke
+Modified to only allow Python 3, use dataclasses and annotated types by Jona Heinke
 """
 
 #standard library imports
@@ -31,7 +31,6 @@ class CreateToolTip:
 	def __post_init__(self):
 		self.widget.bind("<Enter>", self.enter)
 		self.widget.bind("<Leave>", self.leave)
-		#self.widget.bind("<ButtonPress>", self.leave)
 
 	def enter(self, event = None):
 		self.schedule()
@@ -51,22 +50,21 @@ class CreateToolTip:
 			self.widget.after_cancel(id)
 
 	def showtip(self, event = None):
+		#position calculation
 		x = y = 0
-		x, y, _, _ = self.widget.bbox("insert")
+		x, y, _, _ = self.widget.bbox(tk.INSERT)
 		x += self.widget.winfo_rootx() + self.widget.winfo_width()
 		y += self.widget.winfo_rooty() + 4
 		#creates a toplevel window
 		self.tw = tk.Toplevel(self.widget)
 		#leaves only the label and removes the app window
 		self.tw.wm_overrideredirect(True)
-		self.tw.wm_geometry("+%d+%d" % (x, y))
-		label = tk.Label(self.tw, text = self.text, justify = "left",
-						background = "#000000", relief = "solid", borderwidth = 1,
-						wraplength = self.wraplength)
-		label.pack(ipadx = 1)
+		#position tooltip
+		self.tw.wm_geometry(f"+{x}+{y}")
+		tk.Label(self.tw, text = self.text, justify = tk.LEFT, background = "#1C1C1C",
+				relief = tk.SOLID, borderwidth = 0, wraplength = self.wraplength).pack(ipadx = 5, ipady = 4)
 
 	def hidetip(self):
-		tw = self.tw
-		self.tw = None
-		if tw:
-			tw.destroy()
+		if self.tw:
+			self.tw.destroy()
+			self.tw = None
